@@ -1,0 +1,12 @@
+{
+  "$schema": "https://railway.com/railway.schema.json",
+  "build": {
+    "builder": "DOCKERFILE",
+    "dockerfilePath": "Dockerfile"
+  },
+  "deploy": {
+    "startCommand": "sh -c 'exec uvicorn dockguard.web:app --host 0.0.0.0 --port \"${PORT:-8000}\"'",
+    "healthcheckPath": "/health",
+    "healthcheckTimeout": 300
+  }
+}

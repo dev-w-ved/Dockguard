@@ -1,0 +1,9 @@
+services:
+  dockguard:
+    build: .
+    ports:
+      - "8000:8000"
+    volumes:
+      - .:/app:ro
+    environment:
+      DOCKGUARD_LOG_LEVEL: info
