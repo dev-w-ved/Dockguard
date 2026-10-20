@@ -195,8 +195,13 @@ def _source(req: ScanRequest) -> str:
     source = req.path or req.github_url or ""
     if req.github_url and not req.github_url.startswith(("https://github.com/", "http://github.com/")):
         raise HTTPException(422, detail="github_url must point to github.com")
-    if req.path and not Path(req.path).exists():
-        raise HTTPException(422, detail="Local path does not exist")
+    if req.path:
+        candidate = Path(req.path).expanduser()
+        if not candidate.exists() and not candidate.is_absolute():
+            candidate = ROOT / candidate
+        if not candidate.exists() or not candidate.is_dir():
+            raise HTTPException(422, detail="Local path does not exist")
+        source = str(candidate.resolve())
     return source
 
 
@@ -230,6 +235,11 @@ def analyze_compat(payload: dict[str, Any]) -> dict[str, Any]:
     if not source:
         raise HTTPException(422, detail="path is required")
     try:
+        if payload.get("path"):
+            candidate = Path(source).expanduser()
+            if not candidate.exists() and not candidate.is_absolute():
+                candidate = ROOT / candidate
+            source = str(candidate.resolve())
         return analyze(source)
     except Exception as exc:
         raise HTTPException(422, detail=str(exc)) from exc
